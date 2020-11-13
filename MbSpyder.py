@@ -1,16 +1,19 @@
 import requests
 import os
 from bs4 import BeautifulSoup as bs
-
+from abc import abstractmethod 
 
 class MbSpyder:
     def __init__(self):
         self.nameDataFile = None
-        self.urlBase = "https://montebravo.com.br/blog/categoria/podcasts/"
+        self.urlBase      = None
 
 
     @abstractmethod
     def __initCrawler(self):
+        if not self.urlBase:  
+            raise Exception("Attribute (self.urlBase) has not been defined")  
+
         return requests.get(self.urlBase) 
 
 
@@ -21,11 +24,8 @@ class MbSpyder:
 
 
     @abstractmethod
-    def __getContent(self, elements):
-        return [{
-            "titulo": element['aria-label'], 
-            "link": element.find("iframe")['src']
-            } for element in elements.find_all("article")]
+    def getContent(self, elements):
+        raise Exception("The (getContent) method has not been implemented")
 
 
     @abstractmethod
@@ -40,6 +40,7 @@ class MbSpyder:
         else:   
             raise Exception("The file name has not been defined!")
 
+
     @abstractmethod
     def __call__(self):
         print("Pegando o número de páginas!")
@@ -52,8 +53,7 @@ class MbSpyder:
             print(f"pág:: {index}")
             res = requests.get(f"{self.urlBase}page/{index}/")
             elements = bs(res.text,'html.parser')
-            contents = self.__getContent(elements)
+            contents = self.getContent(elements)
             print(f"Gravando dados da pág {index}")
-
             for content in contents:
                 self.__saveData(content)
